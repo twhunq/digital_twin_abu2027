@@ -1,0 +1,166 @@
+{
+  "meta": {
+    "title": "ABU Robocon 2027 - The Pursuit of Mustika Nusantara - Game field map",
+    "rulebook": "ABU Robocon 2027 Rulebook V1.0 (PDF aburobocon2027.id/download/728)",
+    "units": "mm",
+    "frame": "Goc toa do O = goc san phia DO, canh gan (goc co Start Zone do). x: tu Do sang Xanh; y: tu canh gan (Start Zone / Ground Shared Area) ve canh xa (Storage / Mustika Pillar); z: huong len, z=0 la mat Ground Area.",
+    "src_codes": {
+      "R": "Kich thuoc ghi bang chu trong rulebook (muc 2 Terms and Definitions, muc 14)",
+      "F2": "Kich thuoc ghi tren Figure 2 (Game Field Dimensions)",
+      "M": "Vi tri do tu Figure 3 bang homography phoi canh, sai so uoc tinh +/-30..50 mm; khong co kich thuoc ghi truc tiep",
+      "S": "Suy ra tu doi xung / cac kich thuoc khac",
+      "A": "Gia dinh (rulebook khong neu) - can doi chieu san that"
+    },
+    "tolerance": "+/-5% cho kich thuoc san va vat the (muc 13.2)"
+  },
+
+  "field": {
+    "size": [11000, 11000],
+    "center_line_x": 5500,
+    "boundary": { "thickness": 50, "height": 100, "color": [100, 62, 0], "src": "A (chieu cao/do day)" }
+  },
+
+  "levels": {
+    "ground": { "z": 0 },
+    "L1": { "rect": [2500, 2500, 8500, 8500], "z": 600, "src": "R 6000x6000 cao 600; vi tri tam san S+M" },
+    "L2": { "rect": [4000, 4000, 7000, 7000], "z": 900, "src": "R 3000x3000 cao 900; dong tam voi L1 (M)" }
+  },
+
+  "areas": [
+    { "id": "GROUND_RED",  "name": "Ground Area (Red)",  "level": "ground", "team": "red",  "rect": [0, 0, 5500, 11000],    "color": [240, 210, 210], "src": "R" },
+    { "id": "GROUND_BLUE", "name": "Ground Area (Blue)", "level": "ground", "team": "blue", "rect": [5500, 0, 11000, 11000], "color": [170, 210, 230], "src": "R" },
+
+    { "id": "SZ_R1", "name": "Start/Retry Zone R1", "kind": "start", "level": "ground", "team": "red",  "rect": [0, 0, 700, 700],        "color": [223, 34, 34], "src": "R 700x700; vi tri M" },
+    { "id": "SZ_R2", "name": "Start/Retry Zone R2", "kind": "start", "level": "ground", "team": "red",  "rect": [800, 0, 1500, 700],     "color": [223, 34, 34], "src": "R 700x700; khe 100 M" },
+    { "id": "SZ_B1", "name": "Start/Retry Zone B1", "kind": "start", "level": "ground", "team": "blue", "rect": [10300, 0, 11000, 700],  "color": [50, 0, 255],  "src": "S (doi xung)" },
+    { "id": "SZ_B2", "name": "Start/Retry Zone B2", "kind": "start", "level": "ground", "team": "blue", "rect": [9500, 0, 10200, 700],   "color": [50, 0, 255],  "src": "S (doi xung)" },
+
+    { "id": "STORAGE_RED",  "name": "Storage Area (Red)",  "kind": "storage", "level": "ground", "team": "red",  "rect": [0, 10000, 2000, 11000],     "color": [240, 210, 210], "outline": [223, 34, 34], "src": "R 1000x2000; vi tri M (goc xa)" },
+    { "id": "STORAGE_BLUE", "name": "Storage Area (Blue)", "kind": "storage", "level": "ground", "team": "blue", "rect": [9000, 10000, 11000, 11000], "color": [170, 210, 230], "outline": [50, 0, 255], "src": "S" },
+
+    { "id": "GROUND_SHARED", "name": "Ground Shared Area", "kind": "shared", "level": "ground", "rect": [4900, 650, 6100, 1850], "color": [245, 240, 200], "src": "R 1200x1200; F2 650 mm tu mep L1; M" },
+    { "id": "MUSTIKA_SHARED", "name": "Mustika Pillar Shared Area", "kind": "shared", "level": "ground", "rect": [5000, 9250, 6000, 10250], "color": [245, 240, 200], "src": "R 1000x1000; vi tri M (giua mep L1 va bien san)" },
+
+    { "id": "L1_RED",  "name": "Level 1 Area (Red)",  "level": "L1", "team": "red",  "rect": [2500, 2500, 5500, 8500], "color": [235, 180, 160], "src": "R" },
+    { "id": "L1_BLUE", "name": "Level 1 Area (Blue)", "level": "L1", "team": "blue", "rect": [5500, 2500, 8500, 8500], "color": [150, 215, 220], "src": "R" },
+    { "id": "L1_SHARED_NEAR", "name": "L1 Shared Area (near)", "kind": "shared", "level": "L1", "rect": [5000, 2500, 6000, 3250], "color": [245, 240, 200], "src": "F2 1000 x 750" },
+    { "id": "L1_SHARED_FAR",  "name": "L1 Shared Area (far)",  "kind": "shared", "level": "L1", "rect": [5000, 7750, 6000, 8500], "color": [245, 240, 200], "src": "F2 1000 x 750" },
+    { "id": "L1_RETRY_RED",  "name": "L1 Retry Zone (Red)",  "kind": "retry", "level": "L1", "team": "red",  "rect": [3300, 7800, 4000, 8500], "color": [223, 34, 34], "src": "R/F2 700x700; vi tri M" },
+    { "id": "L1_RETRY_BLUE", "name": "L1 Retry Zone (Blue)", "kind": "retry", "level": "L1", "team": "blue", "rect": [7000, 7800, 7700, 8500], "color": [50, 0, 255],  "src": "S" },
+
+    { "id": "TA_RED",  "name": "Transfer Area (Red)",  "kind": "transfer", "level": "L1", "team": "red",  "rect": [1500, 3650, 2500, 4650], "color": [245, 170, 60], "src": "R/F2 1000x1000 cao 600; vi tri y M" },
+    { "id": "TA_BLUE", "name": "Transfer Area (Blue)", "kind": "transfer", "level": "L1", "team": "blue", "rect": [8500, 3650, 9500, 4650], "color": [60, 170, 245], "src": "S" },
+
+    { "id": "L2_AREA", "name": "Level 2 Area (shared)", "kind": "shared", "level": "L2", "rect": [4000, 4000, 7000, 7000], "color": [190, 190, 185], "src": "R" }
+  ],
+
+  "building_spots": [
+    { "id": "L1_R_NEAR",  "level": "L1", "team": "red",  "shared": false, "rect": [2500, 2500, 3000, 3000], "src": "F2 500x500 o goc L1" },
+    { "id": "L1_R_FAR",   "level": "L1", "team": "red",  "shared": false, "rect": [2500, 8000, 3000, 8500], "src": "F2" },
+    { "id": "L1_B_NEAR",  "level": "L1", "team": "blue", "shared": false, "rect": [8000, 2500, 8500, 3000], "src": "S" },
+    { "id": "L1_B_FAR",   "level": "L1", "team": "blue", "shared": false, "rect": [8000, 8000, 8500, 8500], "src": "S" },
+    { "id": "L1_SH_NEAR", "level": "L1", "shared": true, "rect": [5250, 2500, 5750, 3000], "src": "F2/M sat mep ngoai, giua L1 Shared" },
+    { "id": "L1_SH_FAR",  "level": "L1", "shared": true, "rect": [5250, 8000, 5750, 8500], "src": "F2/M" },
+    { "id": "L2_NL", "level": "L2", "shared": true, "rect": [4000, 4000, 4500, 4500], "src": "F2 goc L2" },
+    { "id": "L2_NR", "level": "L2", "shared": true, "rect": [6500, 4000, 7000, 4500], "src": "F2" },
+    { "id": "L2_FL", "level": "L2", "shared": true, "rect": [4000, 6500, 4500, 7000], "src": "F2" },
+    { "id": "L2_FR", "level": "L2", "shared": true, "rect": [6500, 6500, 7000, 7000], "src": "F2" }
+  ],
+  "building_spot_color": [40, 100, 50],
+
+  "transitions": {
+    "stairs_L1": [
+      { "team": "red",  "x": [1500, 2500], "steps": [ { "y": [2750, 3050], "z": 150 }, { "y": [3050, 3350], "z": 300 }, { "y": [3350, 3650], "z": 450 } ], "color": [235, 180, 160], "src": "R bac 300x1000x150; F2 1900 = TA 1000 + 3x300; vi tri y M" },
+      { "team": "blue", "x": [8500, 9500], "steps": [ { "y": [2750, 3050], "z": 150 }, { "y": [3050, 3350], "z": 300 }, { "y": [3350, 3650], "z": 450 } ], "color": [150, 215, 220], "src": "S" }
+    ],
+    "ramps": [
+      { "team": "red",  "x": [1500, 2500], "y_top": 4650, "z_top": 600, "y_bottom": 8150, "z_bottom": 0, "color": [200, 150, 140], "src": "R/F2 dai 3500 (hinh chieu bang); rong 1000 = TA" },
+      { "team": "blue", "x": [8500, 9500], "y_top": 4650, "z_top": 600, "y_bottom": 8150, "z_bottom": 0, "color": [130, 180, 200], "src": "S" }
+    ],
+    "stairs_L2": [
+      { "team": "red",  "rect": [3700, 5000, 4000, 6000], "z": 750, "color": [235, 180, 160], "src": "R/F2 bac 300x1000x150 giua canh L2" },
+      { "team": "blue", "rect": [7000, 5000, 7300, 6000], "z": 750, "color": [150, 215, 220], "src": "S" }
+    ]
+  },
+
+  "walls": {
+    "L1_side_wall_color": [190, 190, 185],
+    "L2_side_wall_color": [190, 190, 185],
+    "fence_color": [100, 62, 0],
+    "barrier_color": [190, 190, 185]
+  },
+
+  "fences": [
+    { "id": "DIV_G1", "kind": "center_divider", "from": [5500, 0],     "to": [5500, 650],   "z0": 0,   "height": 100, "thickness": 30, "src": "F3 vi tri; A chieu cao/day" },
+    { "id": "DIV_G2", "kind": "center_divider", "from": [5500, 1850],  "to": [5500, 2500],  "z0": 0,   "height": 100, "thickness": 30, "src": "F3; A" },
+    { "id": "DIV_G3", "kind": "center_divider", "from": [5500, 8500],  "to": [5500, 9250],  "z0": 0,   "height": 100, "thickness": 30, "src": "F3; A" },
+    { "id": "DIV_G4", "kind": "center_divider", "from": [5500, 10250], "to": [5500, 11000], "z0": 0,   "height": 100, "thickness": 30, "src": "F3; A" },
+    { "id": "DIV_L1a", "kind": "center_divider", "from": [5500, 3250], "to": [5500, 4000],  "z0": 600, "height": 100, "thickness": 30, "src": "F3; A" },
+    { "id": "DIV_L1b", "kind": "center_divider", "from": [5500, 7000], "to": [5500, 7750],  "z0": 600, "height": 100, "thickness": 30, "src": "F3; A" },
+
+    { "id": "BAR_NEAR",  "kind": "L1_perimeter_barrier", "from": [2500, 2500], "to": [8500, 2500], "z0": 600, "height": 100, "thickness": 30, "src": "R (co barrier); A chieu cao/day" },
+    { "id": "BAR_FAR",   "kind": "L1_perimeter_barrier", "from": [2500, 8500], "to": [8500, 8500], "z0": 600, "height": 100, "thickness": 30, "src": "R; A" },
+    { "id": "BAR_W1",    "kind": "L1_perimeter_barrier", "from": [2500, 2500], "to": [2500, 3650], "z0": 600, "height": 100, "thickness": 30, "src": "R; ho tai TA (F2)" },
+    { "id": "BAR_W2",    "kind": "L1_perimeter_barrier", "from": [2500, 4650], "to": [2500, 8500], "z0": 600, "height": 100, "thickness": 30, "src": "R; A" },
+    { "id": "BAR_E1",    "kind": "L1_perimeter_barrier", "from": [8500, 2500], "to": [8500, 3650], "z0": 600, "height": 100, "thickness": 30, "src": "S" },
+    { "id": "BAR_E2",    "kind": "L1_perimeter_barrier", "from": [8500, 4650], "to": [8500, 8500], "z0": 600, "height": 100, "thickness": 30, "src": "S" }
+  ],
+
+  "pillars": [
+    { "id": "MUSTIKA_PILLAR", "center": [5500, 9750], "z0": 0,   "height": 500, "diameter": 270, "cup_diameter": 180, "cup_depth": 100, "color": [100, 62, 0], "src": "R kich thuoc; tam = tam khu 1000x1000 (M)" },
+    { "id": "CENTRAL_PILLAR", "center": [5500, 5500], "z0": 900, "height": 800, "diameter": 270, "cup_diameter": 180, "cup_depth": 100, "color": [100, 62, 0], "src": "R kich thuoc; tam L2 (M)" }
+  ],
+
+  "objects": {
+    "earth_block": { "size": 350, "mass_g": 600, "count_per_team": 20, "color_red": [223, 34, 34], "color_blue": [50, 0, 255], "src": "R" },
+    "sky_block": { "size": 200, "mass_g": 220, "count": 12, "face_red": [223, 34, 34], "face_blue": [50, 0, 255],
+      "note": "Moi khoi chia doi: nua do / nua xanh (Figure 2, Figure 4). Diem tinh theo mau mat tren -> phai lat 90 do de nua mau doi len tren.", "src": "R + F4" },
+    "mustika": { "diameter": 210, "mass_g": 270, "ball": "Mikasa V300W size 5", "src": "R" }
+  },
+
+  "initial_layout": {
+    "earth_storage_default": {
+      "note": "Doi tu xep; toi da 2 khoi/cot, toan bo trong Storage. v2: 5 cot buoc 400 (khe 50 mm cho ham kep 13 mm) x 2 hang y 10190/10690 (than TR rong 620 di doc hang sat tuong xa khong cham hang kia) x 2 tang = 20 khoi.",
+      "red_columns_x": [225, 625, 1025, 1425, 1825],
+      "rows_y": [10190, 10690],
+      "stack": 2,
+      "src": "Gia dinh xep cua doi (A)"
+    },
+    "sky_grid": {
+      "inner_rect": [5000, 750, 6000, 1750],
+      "cell": 200,
+      "row0": "phia xa (y lon, gan L1)",
+      "note": "Luoi 5x5, bo trong o giua, xep ban co; red_dir = huong cua NUA DO khi khoi nam tren san (Figure 4, trai = phia Do, tren = phia L1).",
+      "blocks": [
+        { "r": 0, "c": 0, "red_dir": "+y" }, { "r": 0, "c": 2, "red_dir": "+y" }, { "r": 0, "c": 4, "red_dir": "-y" },
+        { "r": 1, "c": 1, "red_dir": "+x" }, { "r": 1, "c": 3, "red_dir": "-x" },
+        { "r": 2, "c": 0, "red_dir": "-y" }, { "r": 2, "c": 4, "red_dir": "+y" },
+        { "r": 3, "c": 1, "red_dir": "-x" }, { "r": 3, "c": 3, "red_dir": "+x" },
+        { "r": 4, "c": 0, "red_dir": "+y" }, { "r": 4, "c": 2, "red_dir": "-y" }, { "r": 4, "c": 4, "red_dir": "-y" }
+      ],
+      "src": "F4"
+    },
+    "mustika_on": "MUSTIKA_PILLAR"
+  },
+
+  "robot_limits": {
+    "start_size": [700, 700, 700],
+    "max_extended": { "width": 1000, "length": 1400, "height": 1200 },
+    "max_mass_kg": 50,
+    "carry_max": { "TR": 3, "BR": 2 },
+    "battery_nominal_max_V": 24,
+    "circuit_max_V": 42,
+    "pneumatic_max_kPa": 600,
+    "src": "R muc 11"
+  },
+
+  "scoring": {
+    "transfer_per_block": 5,
+    "L1": { "earth_bottom": 10, "earth_middle": 20, "sky": 40 },
+    "L2": { "earth_bottom": 20, "earth_middle": 40, "sky": 80 },
+    "mustika": 250,
+    "match_seconds": 180,
+    "setup_seconds": 60,
+    "src": "R muc 8"
+  }
+}

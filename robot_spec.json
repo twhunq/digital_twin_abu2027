@@ -1,0 +1,82 @@
+{
+  "meta": {
+    "version": "v3",
+    "frame": "He truc robot: goc = tam hinh chieu than tren mat tiep xuc banh; x toi truoc, y sang trai, z len. mm, do, giay.",
+    "note": "Nguon du lieu duy nhat cho: mo hinh 3D (render.js), dong hoc + thoi gian thao tac (robots.js, sim.js), kiem tra thiet ke (tools/check_robot.mjs)."
+  },
+
+  "TR": {
+    "name": "TR v3 — khung chữ U + kẹp đứng trên bàn trượt ống lồng 3 tầng + cần cẩu ống lồng 5 đoạn (chỉ mang Sky / Mustika)",
+    "chassis": { "length": 650, "width": 630, "z_bottom": 40, "z_top": 180, "u_cut": { "x0": -60, "x1": 325, "half_w": 245 } },
+    "wheels": { "type": "mecanum", "diameter": 152, "width": 46, "x": 230, "y": 280, "rollers": 9 },
+    "drive": { "v_max": 2.2, "a_max": 2.0, "v_ramp": 1.4, "a_ramp": 0.8, "turn_rate": 3.5,
+      "motors": "4 × DJI M3508 (hộp số 19:1) 24 V, bánh mecanum Ø152 con lăn PU",
+      "motor_rated_torque_Nm": 3.0, "motor_peak_torque_Nm": 5.0, "motor_rpm_at_24V": 482 },
+    "clamp": {
+      "desc": "Kẹp ôm 2 hàm (cao 480) trong khung chữ U, hành trình 180–450 mm (giữ cột 2 Earth hoặc chồng 2 Sky do cần cẩu xếp vào). Bàn trượt X ống lồng 3 tầng (ray cố định trên 2 dầm dọc → tầng giữa s/2 → tầng trong s) mang dầm ngang + 2 trụ Z; xe con Z mang 2 ray cung tâm ảo tại đáy kẹp (khớp cân bằng, nằm sau mặt sau khối nên không vướng cột Storage bên cạnh).",
+      "slide": [0, 700], "slide_v": 700,
+      "lift": [-80, 250], "lift_v": 450,
+      "open": [180, 450], "open_v": 400, "t_grip": 0.2, "open_storage": 400,
+      "x0": 130, "z0": 12, "jaw_h": 480, "jaw_depth": 300, "jaw_t": 13, "pad": "silicon xốp 5 mm + vát dẫn hướng 20°",
+      "rail_x": -205, "rail_y": 150, "force_N": 35, "level": "khớp bản lề + servo giữ kẹp nằm ngang khi thân nghiêng trên dốc (±12°)"
+    },
+    "boom": {
+      "desc": "Cần cẩu: mâm xoay (yaw) + khớp nâng lệch trước 110 mm (động cơ + hộp số trên chạc) + ống lồng 5 đoạn (thu gọn 330, chồng lấn ≥ 120 mm); chạc treo cổ tay giữ đầu công cụ luôn thẳng đứng.",
+      "turret": [-200, 0], "pivot_z": 655, "pivot_off": 110, "column_r": 50,
+      "yaw": [-180, 180], "yaw_v": 270,
+      "pitch": [-70, 45], "pitch_v": 160,
+      "len": [330, 1040], "len_v": 700,
+      "tool_drop": 130, "roll_v": 360
+    },
+    "tool": { "desc": "Đầu công cụ: cốc hút xếp nếp Ø52 (bơm màng 24 V) + 2 ngón song song trên ray, mỗi ngón có đĩa cao su xoay đồng trục (lật Sky quanh tâm khối, ôm Mustika). Cổ tay xoay quanh trục đứng (tw) để ngón song song mặt khối.", "cup_d": 52, "t_vac": 0.3, "t_release": 0.25, "t_fingers": 0.4, "g_open": 230, "g_min": 180, "g_v": 500, "pad_z": 100 },
+    "stow": { "slide": 0, "lift": 0, "open": 450, "yaw": 0, "pitch": -5, "len": 330 },
+    "stow_high": { "yaw": 0, "pitch": 40, "len": 530 },
+    "carry_stow": { "yaw": 90, "pitch": 45, "len": 330 },
+    "carry_stow_front": { "yaw": 0, "pitch": 40, "len": 530 },
+    "mass": [
+      { "part": "Khung nhôm + 4 bánh + động cơ", "kg": 12.5, "at": [0, 0, 110] },
+      { "part": "Pin LiPo 6S 5000 mAh", "kg": 0.8, "at": [-250, 0, 120] },
+      { "part": "Mạch điều khiển, driver, dây", "kg": 2.2, "at": [-150, 0, 200] },
+      { "part": "Bàn trượt X + trục Z + kẹp", "kg": 6.0, "at": [60, 0, 380] },
+      { "part": "Mâm xoay + cần ống lồng + đầu công cụ + bơm hút", "kg": 3.8, "at": [-200, 0, 560] }
+    ]
+  },
+
+  "BR": {
+    "name": "BR v3 — mecanum + xích hạ được + tháp 3 tầng tự cân bằng + bàn trượt X ống lồng + kẹp và cốc hút trên cột ống lồng 4 tầng",
+    "chassis": { "length": 680, "width": 640, "z_bottom": 45, "z_top": 200 },
+    "wheels": { "type": "mecanum", "diameter": 127, "width": 50, "x": 170, "y": 205, "rollers": 9 },
+    "tracks": {
+      "desc": "Hệ lai: đi trên mặt phẳng (tiến, ngang, chéo, xoay) bằng 4 bánh mecanum, 2 xích thu lên cách sàn 40 mm. Khi leo bậc, xích hạ xuống 25 mm dưới bánh mecanum (nâng thân, bánh rời sàn); đầu trước xích vát.",
+      "length": 680, "width": 70, "y": 285, "height": 160, "front_rise": 170, "drop": 25, "raise": 40,
+      "v_climb": 0.3, "t_deploy": 0.4, "t_crest": 0.6, "sprocket_r": 40, "gear": 2.0
+    },
+    "drive": { "v_max": 1.4, "a_max": 1.2, "turn_rate": 2.5,
+      "motors": "4 × M3508 (mecanum) + 2 × M3508 qua hộp giảm tốc 2:1 (xích, nhông R40) 24 V",
+      "motor_rated_torque_Nm": 3.0, "motor_peak_torque_Nm": 5.0 },
+    "tower": {
+      "desc": "Tháp 3 tầng ống lồng (các tầng lệch nhau theo phương ngang như cột xe nâng), xe con nâng tự do trên tầng trong; đế tháp trên chốt nghiêng ±30° cao 20 mm trên sàn giữ tháp thẳng đứng khi thân nghiêng trên cầu thang.",
+      "base": [-150, 200], "tilt": [-30, 30], "stage1_h": 480, "stage2_ext": 520, "top_margin": 20
+    },
+    "gripper": {
+      "desc": "Kẹp ôm (hàm cao 300) giữ khối dưới + cốc hút giữ khối trên (hoặc Sky/Mustika). Xe con trên tháp → bàn trượt Y → bàn trượt X ống lồng 3 tầng (ray nằm trên đỉnh hàm, sát 2 bên khối) → tấm đầu công cụ phía sau khối mang 2 hàm (trượt Y) và cột ống lồng 4 tầng nâng tự do mang tay hút vươn tới tâm khối. Hàm 300 (không phải 350) để mang Mustika qua đỉnh Central Pillar mà robot vẫn ≤ 1200 mm.",
+      "lift": [0, 880], "lift_v": 600,
+      "slide": [0, 600], "slide_v": 600, "x0": 170,
+      "lat": [-150, 150], "lat_v": 350,
+      "open": [180, 450], "open_v": 400, "t_grip": 0.2, "open_release": 390,
+      "jaw_h": 300, "jaw_depth": 300, "jaw_t": 13,
+      "plunger": [120, 720], "plunger_v": 600, "t_vac": 0.3, "t_release": 0.25
+    },
+    "sensing": { "t_detect": 0.5, "t_align": 0.6, "pos_sigma": 12 },
+    "stow": { "lift": 270, "slide": 0, "lat": 0, "open": 450, "plunger": 360, "tilt": 0, "track": 0 },
+    "carry_lift": 270,
+    "mass": [
+      { "part": "Khung + 4 bánh mecanum + động cơ", "kg": 10.5, "at": [0, 0, 110] },
+      { "part": "2 cụm xích + cơ cấu hạ", "kg": 6.5, "at": [0, 0, 90] },
+      { "part": "Pin LiPo 6S 5000 mAh ×2", "kg": 1.6, "at": [100, 0, 100] },
+      { "part": "Máy tính nhúng, camera RGB-D, LiDAR, driver", "kg": 3.0, "at": [-60, 0, 230] },
+      { "part": "Tháp nâng 2 tầng + khớp nghiêng", "kg": 6.5, "at": [-150, 0, 520] },
+      { "part": "Xe con + bàn trượt XY + kẹp + trụ hút", "kg": 5.0, "at": [250, 0, 400] }
+    ]
+  }
+}
