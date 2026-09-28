@@ -5,11 +5,20 @@
     "note": "Nguon du lieu duy nhat cho: mo hinh 3D (render.js), dong hoc + thoi gian thao tac (robots.js, sim.js), kiem tra thiet ke (tools/check_robot.mjs)."
   },
 
+  "motors": {
+    "note": "Thong so dinh muc (tai truc ra hop so) dung de tinh v_max, a_max tung khop. rpm = toc do o momen dinh muc.",
+    "M3508": { "T": 3.0, "rpm": 469, "kg": 0.365, "desc": "DJI M3508 + hop so P19 + ESC C620, 24 V" },
+    "M2006": { "T": 1.0, "rpm": 416, "kg": 0.090, "desc": "DJI M2006 + hop so P36 + ESC C610, 24 V" },
+    "GM6020": { "T": 1.2, "rpm": 132, "kg": 0.468, "desc": "DJI GM6020 truyen dong truc tiep, 24 V" },
+    "servo": { "T": 2.5, "rpm": 60, "kg": 0.08, "desc": "Servo so 35 kg.cm (DS3235), 7,4 V" }
+  },
+
   "TR": {
     "name": "TR v3 — khung chữ U + kẹp đứng trên bàn trượt ống lồng 3 tầng + cần cẩu ống lồng 5 đoạn (chỉ mang Sky / Mustika)",
     "chassis": { "length": 650, "width": 630, "z_bottom": 40, "z_top": 180, "u_cut": { "x0": -60, "x1": 325, "half_w": 245 } },
     "wheels": { "type": "mecanum", "diameter": 152, "width": 46, "x": 230, "y": 280, "rollers": 9 },
-    "drive": { "v_max": 2.2, "a_max": 2.0, "v_ramp": 1.4, "a_ramp": 0.8, "turn_rate": 3.5,
+    "drive": { "v_max": 3.0, "a_max": 2.0, "v_ramp": 2.0, "a_ramp": 1.0, "turn_rate": 4.0,
+      "calc": "v: M3508 469 rpm x pi x 0,152 = 3,73 m/s -> dung 3,0 (80%). a: lat ra sau khi tang toc o 3,9 m/s2 (trong tam x = -119, h = 277 mm) -> 2,0 (he so 2). Doc 9,7 do: goc lat con 12 do -> a <= 2,1 -> 1,0.",
       "motors": "4 × DJI M3508 (hộp số 19:1) 24 V, bánh mecanum Ø152 con lăn PU",
       "motor_rated_torque_Nm": 3.0, "motor_peak_torque_Nm": 5.0, "motor_rpm_at_24V": 482 },
     "clamp": {
@@ -29,17 +38,40 @@
       "tool_drop": 130, "roll_v": 360
     },
     "tool": { "desc": "Đầu công cụ: cốc hút xếp nếp Ø52 (bơm màng 24 V) + 2 ngón song song trên ray, mỗi ngón có đĩa cao su xoay đồng trục (lật Sky quanh tâm khối, ôm Mustika). Cổ tay xoay quanh trục đứng (tw) để ngón song song mặt khối.", "cup_d": 52, "t_vac": 0.3, "t_release": 0.25, "t_fingers": 0.4, "g_open": 230, "g_min": 180, "g_v": 500, "pad_z": 100 },
+    "actuators": {
+      "note": "lin: v = k * rpm*2pi/60/n * r ; a = (T*n*eta/(r*k) - m*g*vert - 0.05*m*g*(1-vert)) / m, gioi han boi cap. rot: v = rpm/n*6 do/s ; a = (T*n*eta - grav)/I. m, I gom ca vat mang nang nhat.",
+      "s":     { "kind": "lin", "motor": "M2006", "n": 1, "r": 9.55, "k": 2, "eta": 0.85, "links": ["sled", "zcar", "clampLevel", "jawN", "jawP"], "half": ["sledMid"], "pay": 1.2, "vert": 0, "cap_v": 800, "cap_a": 3000, "hw": "3 tang ong long tren 2 ray MGN15 moi tang; dai HTD3M 20T cascade (tang trong di 2x dai)" },
+      "lz":    { "kind": "lin", "motor": "M3508", "n": 1, "r": 14.3, "k": 1, "eta": 0.85, "links": ["zcar", "clampLevel", "jawN", "jawP"], "pay": 1.2, "vert": 1, "cap_v": 600, "cap_a": 3000, "hw": "Xe con Z tren 2 tru nhom 20x20 + con truot MGN12; dai HTD5M 18T keo len" },
+      "w":     { "kind": "lin", "motor": "M2006", "n": 1, "r": 12, "k": 2, "eta": 0.8, "links": ["jawN", "jawP"], "pay": 0, "vert": 0, "cap_v": 800, "cap_a": 4000, "hw": "Banh rang - 2 thanh rang doi xung tren dam Y; luc kep 70 N/ham" },
+      "yaw":   { "kind": "rot", "motor": "M3508", "n": 6, "eta": 0.9, "axis": "yaw", "links": ["boomP", "boomM", "boomN", "boomO", "boomI", "tool", "cup", "fN", "fP", "fNlo", "fPlo", "fNpad", "fPpad"], "pay": 0.27, "pose": { "pitch": 0, "len": 1040 }, "cap_v": 300, "cap_a": 400, "hw": "O bi mam xoay 6810 + dai HTD5M 15T/90T" },
+      "pitch": { "kind": "rot", "motor": "M3508", "n": 14, "eta": 0.85, "axis": "pitch", "links": ["boomP", "boomM", "boomN", "boomO", "boomI", "tool", "cup", "fN", "fP", "fNlo", "fPlo", "fNpad", "fPpad"], "pay": 0.27, "pose": { "pitch": 0, "len": 1040 }, "cap_v": 180, "cap_a": 300, "hw": "Dai HTD5M 2 cap 1:14 (15T/48T, 16T/70T) len ngong truc nang; momen trong luc lon nhat 12,4 N.m (can duoi ngang, bong o dau)" },
+      "len":   { "kind": "lin", "motor": "M3508", "n": 1, "r": 8, "k": 4, "eta": 0.75, "links": ["boomI", "tool", "cup", "fN", "fP", "fNlo", "fPlo", "fNpad", "fPpad"], "half": ["boomM", "boomN", "boomO"], "pay": 0.27, "vert": 0.7, "cap_v": 900, "cap_a": 2500, "hw": "5 doan ong carbon vuong 60/50/40/31/22, cap Dyneema cuon tang r8 keo cascade 4 tang" },
+      "tw":    { "kind": "rot", "motor": "M2006", "n": 2, "eta": 0.85, "I": 0.006, "grav": 0, "cap_v": 360, "cap_a": 1500, "hw": "Co tay xoay dung, dai 1:2" },
+      "roll":  { "kind": "rot", "motor": "M2006", "n": 4, "eta": 0.8, "I": 0.003, "grav": 0, "cap_v": 360, "cap_a": 1500, "hw": "2 dia xoay dong truc, truc cac-dang qua ngon, banh rang con 1:4" },
+      "g":     { "kind": "lin", "motor": "M2006", "n": 1, "r": 8, "k": 2, "eta": 0.8, "links": ["fN", "fP", "fNlo", "fPlo", "fNpad", "fPpad"], "pay": 0, "vert": 0, "cap_v": 500, "cap_a": 3000, "hw": "Banh rang - thanh rang doi xung tren ray ngon MGN9" },
+      "cp":    { "kind": "rot", "motor": "servo", "n": 3, "eta": 0.8, "I": 0.05, "grav": 1.5, "cap_v": 60, "cap_a": 300, "hw": "Servo + dai 1:3 day guoc tren ray cung R520" }
+    },
     "stow": { "slide": 0, "lift": 0, "open": 450, "yaw": 0, "pitch": -5, "len": 330 },
     "stow_high": { "yaw": 0, "pitch": 40, "len": 530 },
     "carry_stow": { "yaw": 90, "pitch": 45, "len": 330 },
-    "carry_stow_front": { "yaw": 0, "pitch": 40, "len": 530 },
-    "mass": [
-      { "part": "Khung nhôm + 4 bánh + động cơ", "kg": 12.5, "at": [0, 0, 110] },
-      { "part": "Pin LiPo 6S 5000 mAh", "kg": 0.8, "at": [-250, 0, 120] },
-      { "part": "Mạch điều khiển, driver, dây", "kg": 2.2, "at": [-150, 0, 200] },
-      { "part": "Bàn trượt X + trục Z + kẹp", "kg": 6.0, "at": [60, 0, 380] },
-      { "part": "Mâm xoay + cần ống lồng + đầu công cụ + bơm hút", "kg": 3.8, "at": [-200, 0, 560] }
-    ]
+    "carry_stow_front": { "yaw": 0, "pitch": 35, "len": 560 },
+    "bom": {
+      "note": "Khoi luong tung khau (kg) = tong linh kien; dung tinh trong tam, khoi luong di chuyen tung truc, momen quan tinh.",
+      "body": [["Khung nhôm định hình 2040/2020 + tấm Al 5052 dày 3 mm (sàn sau, 2 dầm dọc, vỏ truyền động)", 4.6], ["4 × DJI M3508 + C620", 1.74], ["4 bộ đai HTD5M 15 mm + puli (động cơ trong sàn → bánh)", 0.45], ["Pin LiPo 6S 5000 mAh", 0.8], ["Bộ điều khiển (STM32 + IMU), nguồn, dây, E-stop", 0.9], ["Cột mâm xoay: ống nhôm Ø100×2 + bích", 0.55], ["2 ray X cố định MGN15 L620 + đế", 1.3], ["Bơm hút màng 24 V + van + ống", 0.35]],
+      "wheel11": [["Bánh mecanum Ø152 9 con lăn PU (hub nhôm)", 0.6]], "wheel1-1": [["Bánh mecanum Ø152", 0.6]], "wheel-11": [["Bánh mecanum Ø152", 0.6]], "wheel-1-1": [["Bánh mecanum Ø152", 0.6]],
+      "sledMid": [["2 thanh trượt tầng giữa Al 6061 26×25 L420 + 4 con trượt", 0.6]],
+      "sled": [["2 thanh trượt tầng trong Al 6061 24×25 L240 + con trượt", 0.35], ["Dầm ngang ống nhôm 30×30×2 L596", 0.3], ["2 trụ Z nhôm 20×20 L414 + gân", 0.35], ["M2006 + puli HTD3M 20T + đai cascade", 0.22], ["M3508 trục Z + puli HTD5M 18T", 0.4]],
+      "zcar": [["2 con trượt MGN12 + tấm Al 3 mm mang ray cung", 0.55], ["2 ray cung thép R520 (6 đoạn)", 0.3]],
+      "clampLevel": [["Dầm dẫn hướng Y ống nhôm 30×14 + 2 tai + guốc", 0.45], ["M2006 + bánh răng + 2 thanh răng M1", 0.25], ["Servo khớp cân bằng", 0.08]],
+      "jawN": [["Hàm nhôm 2 mm khoét lỗ 300×480 + đệm silicon + tay nối", 0.42]], "jawP": [["Hàm nhôm 2 mm khoét lỗ 300×480 + đệm silicon + tay nối", 0.42]],
+      "turret": [["Ổ bi mâm xoay 6810 + đĩa nhôm + chạc nâng", 0.55], ["M3508 xoay mâm + đai 1:6", 0.5], ["M3508 nâng cần + đai 2 cấp 1:10", 0.6], ["M3508 kéo cáp ống lồng + tang r8", 0.45]],
+      "boomP": [["Ống carbon vuông 60×60×2 L330 + ngõng trục", 0.3]], "boomM": [["Ống carbon 50×50×1,5 L322 + con lăn", 0.19]], "boomN": [["Ống carbon 40×40×1,5 L314", 0.15]], "boomO": [["Ống carbon 31×31×1,5 L306", 0.11]], "boomI": [["Ống carbon 22×22×1,5 L298 + chạc treo nhôm", 0.11]],
+      "tool": [["M2006 cổ tay + đai 1:2", 0.14], ["Ray ngón MGN9 + khung", 0.1], ["M2006 lật đĩa + bánh răng côn", 0.13]],
+      "cup": [["Cốc hút xếp nếp Ø52", 0.03]],
+      "fN": [["Con trượt + ngón trên PETG/TPU", 0.04]], "fP": [["Con trượt + ngón trên PETG/TPU", 0.04]],
+      "fNlo": [["Ngón dưới trượt Al + xi lanh mini", 0.05]], "fPlo": [["Ngón dưới trượt Al + xi lanh mini", 0.05]],
+      "fNpad": [["Đĩa cao su Ø56 + ổ bi", 0.03]], "fPpad": [["Đĩa cao su Ø56 + ổ bi", 0.03]]
+    }
   },
 
   "BR": {
@@ -51,7 +83,8 @@
       "length": 680, "width": 70, "y": 285, "height": 160, "front_rise": 170, "drop": 25, "raise": 40,
       "v_climb": 0.3, "t_deploy": 0.4, "t_crest": 0.6, "sprocket_r": 40, "gear": 2.0
     },
-    "drive": { "v_max": 1.4, "a_max": 1.2, "turn_rate": 2.5,
+    "drive": { "v_max": 2.0, "a_max": 2.0, "turn_rate": 3.0,
+      "calc": "v: M3508 469 rpm x pi x 0,127 = 3,12 m/s -> 2,0. a: lat khi thap nang tai (h = 305 mm, nua co so 170 mm) o 4,8 m/s2 -> 2,0 (he so 2,4).",
       "motors": "4 × M3508 (mecanum) + 2 × M3508 qua hộp giảm tốc 2:1 (xích, nhông R40) 24 V",
       "motor_rated_torque_Nm": 3.0, "motor_peak_torque_Nm": 5.0 },
     "tower": {
@@ -67,16 +100,30 @@
       "jaw_h": 300, "jaw_depth": 300, "jaw_t": 13,
       "plunger": [120, 720], "plunger_v": 600, "t_vac": 0.3, "t_release": 0.25
     },
+    "actuators": {
+      "lz":    { "kind": "lin", "motor": "M3508", "n": 2, "r": 14.3, "k": 2, "eta": 0.85, "links": ["car", "ycar", "xmid", "xin", "pmB", "pmC", "pmD", "parm", "jawN", "jawP"], "half": ["mast2", "mast3"], "pay": 1.2, "vert": 1, "cap_v": 700, "cap_a": 3000, "hw": "Thap 3 tang + xe con nang tu do; dai HTD5M 18T qua 1:2, cap cascade cho tang 2-3" },
+      "s":     { "kind": "lin", "motor": "M2006", "n": 1, "r": 9.55, "k": 2, "eta": 0.85, "links": ["xin", "pmB", "pmC", "pmD", "parm", "jawN", "jawP"], "half": ["xmid"], "pay": 1.2, "vert": 0, "cap_v": 800, "cap_a": 3000, "hw": "2 ray truot ngan keo tai nang 3 tang (45 kg/cap, 600 mm); dai HTD3M cascade" },
+      "ly":    { "kind": "lin", "motor": "M2006", "n": 1, "r": 9.55, "k": 1, "eta": 0.85, "links": ["ycar", "xmid", "xin", "pmB", "pmC", "pmD", "parm", "jawN", "jawP"], "pay": 1.2, "vert": 0, "cap_v": 400, "cap_a": 3000, "hw": "Ray MGN15 ngang tren xe con, dai HTD3M" },
+      "w":     { "kind": "lin", "motor": "M2006", "n": 1, "r": 12, "k": 2, "eta": 0.8, "links": ["jawN", "jawP"], "pay": 0, "vert": 0, "cap_v": 800, "cap_a": 4000, "hw": "Banh rang - 2 thanh rang doi xung tren 2 ray MGN12" },
+      "pf":    { "kind": "lin", "motor": "M2006", "n": 1, "r": 8, "k": 2, "eta": 0.8, "links": ["parm"], "half": ["pmB", "pmC", "pmD"], "pay": 0.6, "vert": 1, "cap_v": 700, "cap_a": 3000, "hw": "Cot hut 4 tang ong long nang tu do, cap Dyneema tang r8" },
+      "tilt":  { "kind": "rot", "motor": "M3508", "n": 30, "eta": 0.5, "I": 2.5, "grav": 20, "cap_v": 40, "cap_a": 120, "hw": "Truc vit - banh vit 1:30 tu khoa (giu thap khi mat dien)" }
+    },
     "sensing": { "t_detect": 0.5, "t_align": 0.6, "pos_sigma": 12 },
     "stow": { "lift": 270, "slide": 0, "lat": 0, "open": 450, "plunger": 360, "tilt": 0, "track": 0 },
     "carry_lift": 270,
-    "mass": [
-      { "part": "Khung + 4 bánh mecanum + động cơ", "kg": 10.5, "at": [0, 0, 110] },
-      { "part": "2 cụm xích + cơ cấu hạ", "kg": 6.5, "at": [0, 0, 90] },
-      { "part": "Pin LiPo 6S 5000 mAh ×2", "kg": 1.6, "at": [100, 0, 100] },
-      { "part": "Máy tính nhúng, camera RGB-D, LiDAR, driver", "kg": 3.0, "at": [-60, 0, 230] },
-      { "part": "Tháp nâng 2 tầng + khớp nghiêng", "kg": 6.5, "at": [-150, 0, 520] },
-      { "part": "Xe con + bàn trượt XY + kẹp + trụ hút", "kg": 5.0, "at": [250, 0, 400] }
-    ]
+    "bom": {
+      "body": [["Khung nhôm 2040 + tấm Al 5052 3 mm (hộp thân, sàn, khung)", 4.2], ["4 × DJI M3508 + C620 (bánh)", 1.74], ["2 × M3508 + hộp số 2:1 (xích)", 1.0], ["2 × pin LiPo 6S 5000 mAh", 1.6], ["Máy tính nhúng Jetson Orin NX + carrier", 0.35], ["LiDAR 2D (RPLIDAR A2) + cảm biến màu", 0.25], ["STM32, ESC, nguồn, dây, E-stop", 1.0], ["Chốt nghiêng + tai + trục vít - bánh vít 1:30 + M3508", 0.9]],
+      "wheel11": [["Bánh mecanum Ø127", 0.45]], "wheel1-1": [["Bánh mecanum Ø127", 0.45]], "wheel-11": [["Bánh mecanum Ø127", 0.45]], "wheel-1-1": [["Bánh mecanum Ø127", 0.45]],
+      "trackN": [["Xích cao su 70 mm + nhông R40 + bánh căng + khung nhôm + ray hạ", 1.6]], "trackP": [["Xích cao su 70 mm + nhông R40 + bánh căng + khung nhôm + ray hạ", 1.6]],
+      "level": [["Đế tháp Al 6061 15 mm + bản lề + gân", 0.55], ["2 cột tầng 1 nhôm 40×20 L393", 0.45], ["M3508 nâng tháp + đai 1:2 + tang cáp", 0.6]],
+      "mast2": [["2 cột tầng 2 nhôm 36×16 L385 + giằng + con lăn", 0.4]], "mast3": [["2 cột tầng 3 nhôm 32×16 L380 + giằng + puli cáp", 0.35]],
+      "car": [["Xe con Al 18 mm + 4 con lăn", 0.35], ["Ray Y MGN15 L600", 0.4], ["Camera RGB-D (RealSense D435)", 0.1], ["M2006 trục Y + đai", 0.2]],
+      "ycar": [["Dầm Y ống nhôm 16×24 + 2 ray X cố định (ray ngăn kéo tải nặng)", 0.75], ["M2006 trục X + đai cascade", 0.2]],
+      "xmid": [["2 thanh ray tầng giữa (ray ngăn kéo)", 0.45]],
+      "xin": [["2 thanh ray tầng trong + tai", 0.45], ["Tấm đầu công cụ Al 2 mm khoét lỗ", 0.35], ["2 ray hàm MGN12 L210 + M2006 + bánh răng", 0.4], ["Cột hút tầng 1 + M2006 tang cáp", 0.2]],
+      "pmB": [["Cột hút tầng 2", 0.08]], "pmC": [["Cột hút tầng 3", 0.07]], "pmD": [["Cột hút tầng 4", 0.06]],
+      "parm": [["Tay hút ống nhôm 24×12 + cốc hút Ø60 + van", 0.15]],
+      "jawN": [["Hàm nhôm 2 mm 300×300 + đệm + tay nối", 0.3]], "jawP": [["Hàm nhôm 2 mm 300×300 + đệm + tay nối", 0.3]]
+    }
   }
 }

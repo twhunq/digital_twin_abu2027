@@ -35,28 +35,114 @@ export function jointLimits(role, R) {
   return { lz: g.lift, s: g.slide, ly: g.lat, w: g.open, pf: g.plunger, tilt: r.tower.tilt, track: [0, 1] };
 }
 
-function jointSpeeds(role, R) {
-  const r = R[role];
-  if (role === 'TR') {
-    const c = r.clamp, b = r.boom;
-    return { s: c.slide_v, lz: c.lift_v, w: c.open_v, yaw: b.yaw_v, pitch: b.pitch_v, len: b.len_v, roll: b.roll_v, fing: 1 / r.tool.t_fingers, tw: b.roll_v, g: r.tool.g_v };
-  }
-  const g = r.gripper;
-  return { lz: g.lift_v, s: g.slide_v, ly: g.lat_v, w: g.open_v, pf: g.plunger_v, tilt: 60, track: 1 / r.tracks.t_deploy };
+// Gioi han toc do / gia toc tung khop TINH TU PHAN CUNG (robot_spec.json: motors + actuators).
+// lin: v = k * omega / n * r ; F_ra = T * n * eta / (r * k) ; a = (F_ra - m g vert - 0.05 m g (1 - vert)) / m
+// rot: v = rpm / n * 6 (do/s) ; a = (T * n * eta - grav) / I (rad/s2 -> do/s2). Ca hai bi chan boi cap_v, cap_a.
+const G = 9.81;
+// Khoi luong tung khau tu BOM (kg) va trong tam cua khau (tam hinh hoc cac khoi, theo the tich) trong he khau
+export function linkMass(role, R) {
+  const bom = R[role].bom || {}, out = {};
+  for (const [k, v] of Object.entries(bom)) if (Array.isArray(v)) out[k] = v.reduce((a, it) => a + it[1], 0);
+  return out;
 }
+const CC = new WeakMap();
+function linkCentroids(role, R) {
+  let c = CC.get(R);
+  if (!c) CC.set(R, (c = {}));
+  if (c[role]) return c[role];
+  const out = {};
+  for (const l of links(role, R)) {
+    let V = 0, x = 0, y = 0, z = 0;
+    for (const p of l.prims) {
+      const q = primBox(p, R), v = Math.max(1, (q.b[0] - q.a[0]) * (q.b[1] - q.a[1]) * (q.b[2] - q.a[2]));
+      V += v; x += (v * (q.a[0] + q.b[0])) / 2; y += (v * (q.a[1] + q.b[1])) / 2; z += (v * (q.a[2] + q.b[2])) / 2;
+    }
+    out[l.name] = V ? [x / V, y / V, z / V] : [0, 0, 0];
+  }
+  return (c[role] = out);
+}
+// Tai cua 1 bo truyen dong: lin -> khoi luong keo m (kg); rot -> momen quan tinh I (kg.m2) + momen trong luc grav (N.m)
+export function actuatorLoad(role, R, act) {
+  if (act.kind === 'lin' && act.links) {
+    const lm = linkMass(role, R);
+    const m = act.links.reduce((a, k) => a + (lm[k] || 0), 0) + 0.5 * (act.half || []).reduce((a, k) => a + (lm[k] || 0), 0) + (act.pay || 0);
+    return { m };
+  }
+  if (act.kind === 'rot' && act.links && act.axis) {
+    const lm = linkMass(role, R), cen = linkCentroids(role, R), j = { ...stowJoints(role, R), ...(act.pose || {}) };
+    const F = frames(role, R, j, 0), b = R.TR.boom, piv = M.ap(F.boomP, [0, 0, 0]);
+    const pts = act.links.map((k) => [lm[k] || 0, M.ap(F[k], cen[k])]);
+    const tip = M.ap(F.boomP, [j.len, 0, 0]);
+    pts.push([act.pay || 0, [tip[0], tip[1], tip[2] - b.tool_drop - 105]]);
+    let I = 0, grav = 0;
+    for (const [m, p] of pts) {
+      if (act.axis === 'yaw') I += m * (((p[0] - b.turret[0]) / 1000) ** 2 + ((p[1] - b.turret[1]) / 1000) ** 2);
+      else { const dx = (p[0] - piv[0]) / 1000, dz = (p[2] - piv[2]) / 1000; I += m * (dx * dx + dz * dz); grav += m * G * dx; }
+    }
+    return { I, grav: Math.abs(grav) };
+  }
+  return { m: act.m, I: act.I, grav: act.grav || 0 };
+}
+export function actuatorLimit(R, act, role) {
+  const mo = R.motors[act.motor], w = (mo.rpm * 2 * Math.PI) / 60, L = role ? actuatorLoad(role, R, act) : { m: act.m, I: act.I, grav: act.grav || 0 };
+  if (act.kind === 'lin') {
+    const r = act.r / 1000, vmax = ((act.k * w) / act.n) * r * 1000, m = L.m;
+    const F = (mo.T * act.n * act.eta) / (r * act.k), load = m * G * (act.vert || 0) + 0.05 * m * G * (1 - (act.vert || 0));
+    const amax = ((F - load) / m) * 1000;
+    return { v: Math.min(act.cap_v, vmax), a: Math.min(act.cap_a, amax), vmax, amax, F, load, m };
+  }
+  const vmax = (mo.rpm / act.n) * 6, Tout = mo.T * act.n * act.eta, amax = ((Tout - L.grav) / L.I) / DEG;
+  return { v: Math.min(act.cap_v, vmax), a: Math.min(act.cap_a, amax), vmax, amax, Tout, load: L.grav, I: L.I };
+}
+const LIMC = new WeakMap();
+function jointLimitsVA(role, R) {
+  let c = LIMC.get(R);
+  if (!c) LIMC.set(R, (c = {}));
+  if (c[role]) return c[role];
+  const r = R[role], v = {}, a = {};
+  for (const [k, act] of Object.entries(r.actuators || {})) { if (k === 'note') continue; const L = actuatorLimit(R, act, role); v[k] = L.v; a[k] = L.a; }
+  if (role === 'TR') { v.fing = 1 / r.tool.t_fingers; a.fing = 20; }
+  else { v.track = 1 / r.tracks.t_deploy; a.track = 20; }
+  return (c[role] = { v, a });
+}
+export const jointVA = jointLimitsVA;
 
-// Thoi gian de moi khop di tu `from` toi `to` (cac khop chay dong thoi) - s
-export function jointTime(role, R, from, to) {
-  const v = jointSpeeds(role, R);
-  let t = 0;
+// Profile hinh thang dong bo nhieu khop: tra ve thoi gian T va ti le tang toc c (0 < c <= 0.5) sao cho
+// MOI khop deu khong vuot v_max, a_max cua no (khop dai nhat quyet dinh T).
+export function profile(role, R, from, to) {
+  const { v, a } = jointLimitsVA(role, R), J = [];
   for (const k of Object.keys(to)) {
     if (from[k] == null || v[k] == null) continue;
     let d = Math.abs(to[k] - from[k]);
     if (k === 'yaw') d = Math.abs(((to[k] - from[k] + 540) % 360) - 180);
-    t = Math.max(t, d / v[k]);
+    if (d > 1e-6) J.push({ d, v: v[k], a: a[k] });
   }
-  return t > 0 ? t + 0.08 : 0; // +80 ms tang/giam toc
+  if (!J.length) return { T: 0, c: 0.5 };
+  let T = 0;
+  for (const j of J) T = Math.max(T, j.d >= (j.v * j.v) / j.a ? j.d / j.v + j.v / j.a : 2 * Math.sqrt(j.d / j.a));
+  for (let it = 0; it < 60; it++) {
+    let lo = 0, hi = 0.5;
+    for (const j of J) {
+      const q = j.d / (j.a * T * T); // c (1 - c) >= q
+      lo = Math.max(lo, q >= 0.25 ? 0.5 : (1 - Math.sqrt(1 - 4 * q)) / 2);
+      hi = Math.min(hi, 1 - j.d / (j.v * T));
+    }
+    if (lo <= hi + 1e-9) return { T, c: Math.max(lo, 1e-3) };
+    T *= 1.03;
+  }
+  return { T, c: 0.5 };
 }
+// Vi tri chuan hoa (0..1) theo profile hinh thang, u = t / T
+export function trapS(u, c) {
+  if (u <= 0) return 0;
+  if (u >= 1) return 1;
+  const vp = 1 / (1 - c);
+  if (u < c) return (0.5 * vp * u * u) / c;
+  if (u <= 1 - c) return 0.5 * vp * c + vp * (u - c);
+  return 1 - (0.5 * vp * (1 - u) * (1 - u)) / c;
+}
+// Thoi gian de moi khop di tu `from` toi `to` (dong thoi, profile hinh thang) - s
+export function jointTime(role, R, from, to) { return profile(role, R, from, to).T; }
 
 // ---------------------------------------------------------------- dai so 3x4 (affine cung)
 // M = [r00 r01 r02 tx, r10 r11 r12 ty, r20 r21 r22 tz]
@@ -274,7 +360,7 @@ function brLinks(R) {
     xi.push(bxs(sg, [pl, pl + 13], [220, 250], [g.jaw_h - 18, zc1], 'act', { name: 'tai tấm đầu' }));
     xi.push(bxs(sg, [pl + 13, pl + 23], [40, 250], [g.jaw_h - 38, g.jaw_h - 18], 'steel', { name: 'ray hàm (Y)' }));
   }
-  xi.push(box([pl, -250, 130], [pl + 13, 250, g.jaw_h], 'aluDark', { rad: 3, name: 'tấm đầu công cụ' }));
+  xi.push(box([pl, -250, 205], [pl + 13, 250, g.jaw_h], 'aluDark', { rad: 3, name: 'tấm đầu công cụ' }));
   xi.push(box([pl + 13, -25, 60], [pl + 21, 25, zc1], 'extrusion', { name: 'cột hút tầng 1' }));
   add({ name: 'ycar', parent: 'car', free: ['car'], prims: yc });
   add({ name: 'xmid', parent: 'ycar', free: ['ycar'], prims: xm });
@@ -286,8 +372,8 @@ function brLinks(R) {
   }
   add({
     name: 'parm', parent: 'pmD', conn: ['pmD'], free: ['pmD'], prims: [
-      box([pl + 39, -20, 20], [pl + 47, 20, 50], 'act', { name: 'con trượt tay hút' }),
-      box([pl + 47, -12, 30], [cx + 12, 12, 45], 'alu', { rad: 3, name: 'tay hút' }),
+      box([pl + 39, -20, 18], [pl + 47, 20, 35], 'act', { name: 'con trượt tay hút' }),
+      box([pl + 47, -12, 22], [cx + 12, 12, 34], 'alu', { rad: 3, name: 'tay hút (ống nhôm 24×12)' }),
       cyl('z', [cx, 0, 25], 8, 10, 'hub'),
       cyl('z', [cx, 0, 10], 30, 20, 'cup', { r2: 22, name: 'cốc hút' }),
     ],
@@ -317,7 +403,7 @@ export function brPivot(R) { return [R.BR.tower.base[0], 0, R.BR.chassis.z_top +
 export function brMast(R, j) {
   const g = R.BR.gripper, tw = R.BR.tower;
   const e = Math.max(0, j.lz + g.jaw_h + tw.top_margin - (tw.base[1] + tw.stage1_h));
-  const ep = Math.max(0, j.pf + 50 - (g.jaw_h + tw.top_margin));
+  const ep = Math.max(0, j.pf + 35 - (g.jaw_h + tw.top_margin));
   return { e, ep };
 }
 
@@ -476,18 +562,13 @@ export function envelope(role, R, j, items = [], pitch = 0) {
   return { ...box, L: box.x1 - box.x0, W: box.y1 - box.y0, H: box.z1 };
 }
 
-// Trong tam (he robot) + tong khoi luong (kg), tinh ca vat dang mang
+// Trong tam (he robot, khong nghieng) + tong khoi luong (kg) tu BOM tung khau, tinh ca vat dang mang
 export function cog(role, R, j, items = []) {
   const MASS = { earth: 0.6, sky: 0.22, mustika: 0.27 };
+  const lm = linkMass(role, R), cen = linkCentroids(role, R), F = frames(role, R, j, 0);
   let m = 0, x = 0, y = 0, z = 0;
   const add = (kg, p) => { m += kg; x += kg * p[0]; y += kg * p[1]; z += kg * p[2]; };
-  for (const p of R[role].mass) {
-    let at = p.at;
-    if (role === 'TR' && /kẹp/.test(p.part)) { const c = trClampBase(R, j); at = [c[0] - 100, 0, c[2] + 340]; }
-    if (role === 'TR' && /cần/.test(p.part)) { const t = trBoomTip(R, j), b = R.TR.boom; at = [(b.turret[0] * 2 + t[0]) / 3, (b.turret[1] * 2 + t[1]) / 3, (b.pivot_z * 2 + t[2]) / 3]; }
-    if (role === 'BR' && /Xe con/.test(p.part)) { const c = brGripBase(R, j); at = [c[0] - 60, c[1], c[2] + 250]; }
-    add(p.kg, at);
-  }
+  for (const [k, kg] of Object.entries(lm)) if (F[k]) add(kg, M.ap(F[k], cen[k]));
   for (const b of parts(role, R, j, items)) if (b.name.startsWith('vật:')) add(MASS[b.name.slice(4)], [(b.x0 + b.x1) / 2, (b.y0 + b.y1) / 2, (b.z0 + b.z1) / 2]);
   return { m, p: [x / m, y / m, z / m] };
 }

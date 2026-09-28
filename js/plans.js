@@ -45,7 +45,7 @@ export const BR_NODES = {
   B_TA: [2000, 4150, null],
   H_TA_N: [2660, 3980, 180 * D],       // lay o gan (T1) - than lan 160 mm vao TA qua cua mo, cach dau barrier 10 mm
   H_TA_F: [2660, 4320, 180 * D],       // lay o xa (T2)
-  H_MU: [2840, 4320, 180 * D],         // nhan Mustika: lui 180 mm de bong (x 2345) khong nam tren than BR
+  H_MU: [2840, 4290, 180 * D],         // nhan Mustika: lui 180 mm de bong (x 2345) khong nam tren than BR; y 4290: cach dau barrier TA 40 mm (xoay tai cho an toan)
   H_X: [3050, 4150, null],             // diem thoat khoi TA (tranh dau barrier L1)
   H_N: [3100, 3500, null],
   H_F: [3100, 7400, null],
@@ -62,8 +62,8 @@ export const BR_NODES = {
   L2E: [6450, 5500, null],
   SP_L2_NL: [4370, 4950, -90 * D],
   SP_L2_FL: [4370, 6050, 90 * D],
-  SP_L2_NR: [6630, 4950, -90 * D],
-  SP_L2_FR: [6630, 6050, 90 * D],
+  SP_L2_NR: [6610, 4950, -90 * D],      // lui 20 mm: ray X cua BR khong lo qua mep L2 sang L1 doi phuong
+  SP_L2_FR: [6610, 6050, 90 * D],
   PILLAR: [4850, 5500, 0],
 };
 export const BR_EDGES = [
@@ -107,7 +107,10 @@ export const DEFAULT_PARAMS = {
   br_pair_place: true,   // dat cap Earth 2 tang trong 1 lan - can FAQ
   br_lookahead: true,    // mang ket hop khoi cua 2 thap
   tr_orient_sky: true,   // TR xoay Sky dung mau truoc khi giao
-  tr_sky_first: true,    // chuyen dau gom Sky (luoi Sky nam sat o xuat phat)
+  tr_sky_first: false,   // chuyen dau gom Sky (false: Earth truoc - BR bat dau xay ngay, Sky khong dung duoc khi thap chua co Earth)
+  ta_buffer: true,
+  tr_mixed: false,       // chuyen hon hop 1 Sky tren can + 2 Earth: da thu, CHAM hon ~4 s/thap vi luoi Sky va Storage o 2 dau san
+  tr_earth_batch: true,  // giao du Earth cho cac thap Mandate truoc, Sky sau (BR khong phai cho Sky giua 2 thap)
   extra_delivery: true,  // TR giao them Earth lay diem Transfer
   pos_sigma: 12,         // sai so dat khoi cua BR (mm, do lech chuan) - khoi lech > 75 mm roi khoi spot
   seed: 1,
@@ -116,13 +119,13 @@ export const DEFAULT_PARAMS = {
 export const SPEC_KNOBS = [
   ['TR.drive.v_max', 'TR vận tốc tối đa', 0.8, 3.5, 0.1, 'm/s'],
   ['TR.drive.v_ramp', 'TR vận tốc trên dốc', 0.5, 2.5, 0.1, 'm/s'],
-  ['TR.clamp.slide_v', 'TR bàn trượt X', 200, 1200, 50, 'mm/s'],
-  ['TR.boom.yaw_v', 'TR mâm xoay cần', 90, 540, 10, '°/s'],
-  ['TR.boom.len_v', 'TR ống lồng', 200, 1200, 50, 'mm/s'],
+  ['TR.actuators.s.cap_v', 'TR bàn trượt X (trần, ≤ tốc độ động cơ)', 200, 1200, 50, 'mm/s'],
+  ['TR.actuators.yaw.cap_v', 'TR mâm xoay cần (trần)', 90, 540, 10, '°/s'],
+  ['TR.actuators.len.cap_v', 'TR ống lồng (trần)', 200, 1200, 50, 'mm/s'],
   ['BR.drive.v_max', 'BR vận tốc tối đa', 0.5, 2.5, 0.1, 'm/s'],
   ['BR.tracks.v_climb', 'BR leo bằng xích', 0.1, 0.6, 0.02, 'm/s'],
-  ['BR.gripper.lift_v', 'BR tháp nâng', 200, 1200, 50, 'mm/s'],
-  ['BR.gripper.slide_v', 'BR bàn trượt X', 200, 1200, 50, 'mm/s'],
+  ['BR.actuators.lz.cap_v', 'BR tháp nâng (trần)', 200, 1200, 50, 'mm/s'],
+  ['BR.actuators.s.cap_v', 'BR bàn trượt X (trần)', 200, 1200, 50, 'mm/s'],
   ['BR.sensing.t_detect', 'BR nhận dạng vật ở TA', 0.1, 2, 0.1, 's'],
   ['BR.sensing.t_align', 'BR căn spot bằng cảm biến màu', 0.1, 2, 0.1, 's'],
 ];
